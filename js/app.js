@@ -1,95 +1,94 @@
 "use strict"
 
-var app = {
-	replicationStatus: 'UNKNOWN',
-	couchUrl: 'http://localhost:5984/pouchdemo',
-	replicationOptions: {
+var pouchToCouch = angular.module('pouchToCouch', []);
+
+pouchToCouch.controller('PouchToCouchController', function PouchToCouchController($scope) {
+	var db = {};
+	var replicationStatus = 'UNKNOWN';
+	var couchUrl = 'http://localhost:5984/pouchdemo';
+	$scope.users = {};
+	$scope.userFilter = '';
+
+	var replicationOptions = {
 		    continuous: false,
 		    attachments: false,
 		    complete: function(err, res) {
 		    	if (err) {
-		      		app.updateStatus('DISCONNECTED');
+		      		updateStatus('DISCONNECTED');
 		      	} else {
-		      		app.updateStatus('CONNECTED');
-		    	   	// console.log('replication done');
+		      		updateStatus('CONNECTED');
+		      		//update all docs status to synced
+					db.allDocs({include_docs: true, descending: true}, function(err, doc) {
+						_.each(doc.rows, function(msg) {
+							$scope.users[msg.doc.from] = msg.doc.from;
+							if (!msg.doc.synced) {
+								msg.doc.synced = true;
+								$scope.users[msg.doc.from] = true;
+								db.put(msg.doc);
+						 	}
+						});
+			  		});
 		      	}
 		  	}
-		},
+		};
 
-	init: function() {
+	$scope.login = function() {
+		if ($scope.name) {
+			$scope.loggedIn = true;
+		}
 		PouchDB.destroy('pouchdemo', function(err, info) { 
-			app.db = new PouchDB('pouchdemo', {complete: function() {app.refreshList()}});
+			db = new PouchDB('pouchdemo' + $scope.name, {complete: function() {refreshList()}});
 		});
-		app.addButton = document.querySelector('#add-button');
-		app.textInput = document.querySelector('#text-input');
-		app.resultList = document.querySelector('#result-list');
-		app.addButton.addEventListener('click', app.addText, false);
 
 		//set timer to periodically sync pouch and couch
-		setInterval(app.sync, 2000);
-	},
+		setInterval(sync, 2000);
+	};
 
-	sync: function() {
-			app.updateStatus('REFRESH');
+	var sync = function() {
+			updateStatus('REFRESH');
 			//fetch remote docuemnts
-			PouchDB.replicate(app.couchUrl,app.db, app.replicationOptions);
+			PouchDB.replicate(couchUrl, db, replicationOptions);
 
 			//replicate local documents
-			PouchDB.replicate(app.db, app.couchUrl, app.replicationOptions);
-			app.refreshList();
-		},
+			PouchDB.replicate(db, couchUrl, replicationOptions);
+			refreshList();
+		};
 
-	addText: function() {
-		  var textEntry = {_id: String((new Date()).getTime()), content: app.textInput.value };
+	var refreshList = function() {
+		db.allDocs({include_docs: true, descending: true}, function(err, doc) {
+			$scope.messages = doc.rows;
+  		});
+	};
 
-		  if (!textEntry.content) {return;}
+	$scope.addText = function() {
+		if (!$scope.message) {return;}
 
-		 app.db.put(textEntry, function callback(err, result) {
-		    if (err) {
-		    	console.log(err);
-		    }
+		  var textEntry = {
+		  	from: $scope.name,
+		  	content: $scope.message,
+		  	time: new Date(),
+		  	synced: false
+		  }; 
+
+		 db.post(textEntry, function callback(err, result) {
 		    if (result) {
 		      	console.log("document stored in pouch");
-		      	app.textInput.value = '';
-		      	app.refreshList();
+		      	$scope.message = '';
+		      	refreshList();
 		    }
 		});
-	},
+	};
 
-	refreshList: function() {
-		app.db.allDocs({include_docs: true, descending: true}, function(err, doc) {
-			app.resultList.innerHTML = '';
-    		for (var item in doc.rows) {
-    			var li = document.createElement('li');
-    			var textSpan = document.createElement('span');
-    			textSpan.textContent = doc.rows[item].doc.content;
-    			var input = document.createElement('input');
-    			input.type = 'button';
-    			input.value = 'Delete (id=' + doc.rows[item].doc._id + ')';
-    			input.setAttribute('data-id', doc.rows[item].doc._id);
-
-    			li.appendChild(textSpan);
-    			li.appendChild(input);
-    			app.resultList.appendChild(li);
-    		}
-  		});
-	},
-	updateStatus: function(status) {
-		app.replicationStatus = status;
-
-		var statusSpan = document.querySelector('#status-indicator');
-
+	var updateStatus = function(status) {
 		if (status === 'REFRESH') {
-			    statusSpan.className = 'glyphicon glyphicon-heart';
-			    statusSpan.style.color = "black";
+			$scope.connectionStyle = function() {return {color: 'black'};};
 		} else if (status === 'CONNECTED') {
-			    statusSpan.className = 'glyphicon glyphicon-heart';
-			    statusSpan.style.color = "red";
+			$scope.connectionStyle = function() {return {color: 'red'};};
+			$scope.connected = true;
 		} else if (status === 'DISCONNECTED') {
-			    statusSpan.className = 'glyphicon glyphicon-warning-sign';
-			    statusSpan.style.color = "DarkGray";
+			$scope.connectionStyle = function() {return {color: 'DarkGray'};};
+			$scope.connected = false;
 		}
-	}
-};
-
-window.addEventListener("load", app.init, false);
+		$scope.$apply();
+	};
+});
