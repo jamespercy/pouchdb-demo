@@ -7,7 +7,7 @@
 	<script src="js/underscore-min.js"></script>
 	<script src="js/app.js"></script>
 	<h1>From pouch to couch</h1>
-	<h3><span id="status-indicator" class="glyphicon" ng-class="{'glyphicon-heart': connected && loggedIn, 'glyphicon-warning-sign': !connected && loggedIn, 'glyphicon-refresh': !loggedIn}" ng-style="connectionStyle()"></span></h3>
+	<h3><span id="status-indicator" class="glyphicon" ng-class="{'glyphicon-heart': connected && loggedIn, 'glyphicon-cloud': !connected && loggedIn, 'glyphicon-heart-empty': !loggedIn}" ng-style="connectionStyle()"></span></h3>
 	<h3 ng-cloak ng-show="loggedIn">{{name}} says:</h3>
 </head>
 <body class="container" ng-controller="PouchToCouchController" ng-init="connected = false">
@@ -42,6 +42,7 @@
 			                <th>Message</th>
 			                <th>Time</th>
 			                <th>Action</th>
+			                <th>Synced</th>
 			            </tr>
 			        </thead>
 				    <tbody ng-repeat="msg in messages">
@@ -50,6 +51,7 @@
 							<td>{{msg.doc.content}}</td>
 							<td>{{msg.doc.time}}</td>
 							<td><button ng-disabled="querying" ng-click="delete(msg)">delete</button></td>
+							<td><span  class="glyphicon" ng-class="{'glyphicon-ok' : msg.doc.synced, 'glyphicon-time' : !msg.doc.synced}" />
 						</tr>
 		    		</tbody>
 				</table>
