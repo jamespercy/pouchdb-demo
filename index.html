@@ -6,7 +6,7 @@
 	<script src="js/pouchdb-2.2.0.min.js"></script>
 	<script src="js/underscore-min.js"></script>
 	<script src="js/app.js"></script>
-	<h1>From pouch to couch</h1>
+	<h1 ng-style="connectionStyle()">From pouch to couch</h1>
 	<h3><span id="status-indicator" class="glyphicon" ng-class="{'glyphicon-heart': connected && loggedIn, 'glyphicon-cloud': !connected && loggedIn, 'glyphicon-heart-empty': !loggedIn}" ng-style="connectionStyle()"></span></h3>
 	<h3 ng-cloak ng-show="loggedIn">{{name}} says:</h3>
 </head>
