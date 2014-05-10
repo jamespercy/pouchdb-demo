@@ -38,9 +38,7 @@
 				<table class="table table-hover">
 					<thead>
 						<tr>
-			                <th>From <select ng-model="userFilter">
- 								<option ng-repeat="usr in users" value="usr">{{usr}}</option>
-			                </select></th>
+			                <th>From</th>
 			                <th>Message</th>
 			                <th>Time</th>
 			                <th>Action</th>
@@ -51,7 +49,7 @@
 							<td>{{msg.doc.from}}</a></td>
 							<td>{{msg.doc.content}}</td>
 							<td>{{msg.doc.time}}</td>
-							<td><a href="">delete</a></td>
+							<td><button ng-disabled="querying" ng-click="delete(msg)">delete</button></td>
 						</tr>
 		    		</tbody>
 				</table>
