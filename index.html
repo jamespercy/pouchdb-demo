@@ -1,17 +1,26 @@
 <!DOCTYPE HTML>
 <html>
-<script src="js/pouchdb-2.2.0.min.js"></script>
-<script src="js/app.js"></script>
-<body>
-	<section id="input-section">
-		<label for="text-input">Please enter some text </label>
-		<input id="text-input" type="text"></input>
-		<input id="add-button" type="button" value="Add"></input>
-	</section>
-		<section id="status-section">
-		<label for="status-indicator">connection status</label>
-		<span id="status-indicator">UNKNOWN</label>
-	</section>
+<head>
+	<link href="style/bootstrap.min.css" rel="stylesheet">
+	<script src="js/pouchdb-2.2.0.min.js"></script>
+	<script src="js/app.js"></script>
+	<h1>From pouch to couch</h1>
+	<h3><span id="status-indicator" class="glyphicon glyphicon-refresh"></span></h3>
+</head>
+<body class="container">
+	<form class="form-horizontal" role="form">
+		<div class="form-group">
+			<div class="row">
+				<label for="text-input" class="col-sm-2 control-label">Please enter some text </label>
+				<div class="input-group">
+					<input id="text-input" type="text" class="form-control"></input>
+					<span class="input-group-btn">
+	        			<button id="add-button" class="btn btn-default" type="button">Add</button>
+      				</span>
+      			</div>
+			</div>
+		</div>
+	</form>
 	<br>
 	<section id="results">
 	Added text to list

@@ -30,6 +30,7 @@ var app = {
 	},
 
 	sync: function() {
+			app.updateStatus('REFRESH');
 			//fetch remote docuemnts
 			PouchDB.replicate(app.couchUrl,app.db, app.replicationOptions);
 
@@ -75,8 +76,19 @@ var app = {
 	},
 	updateStatus: function(status) {
 		app.replicationStatus = status;
+
 		var statusSpan = document.querySelector('#status-indicator');
-		statusSpan.textContent = status;
+
+		if (status === 'REFRESH') {
+			    statusSpan.className = 'glyphicon glyphicon-heart';
+			    statusSpan.style.color = "black";
+		} else if (status === 'CONNECTED') {
+			    statusSpan.className = 'glyphicon glyphicon-heart';
+			    statusSpan.style.color = "red";
+		} else if (status === 'DISCONNECTED') {
+			    statusSpan.className = 'glyphicon glyphicon-warning-sign';
+			    statusSpan.style.color = "DarkGray";
+		}
 	}
 };
 
