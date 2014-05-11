@@ -6,10 +6,7 @@ pouchToCouch.controller('PouchToCouchController', function PouchToCouchControlle
 	var db = {};
 	var replicationStatus = 'UNKNOWN';
 	var couchUrl = 'http://localhost:5984/pouchdemo';
-	var interval;
-
-	$scope.users = {};
-	$scope.userFilter = '';
+	var timeout;
 
 	var replicationOptions = {
 		    continuous: false,
@@ -20,8 +17,8 @@ pouchToCouch.controller('PouchToCouchController', function PouchToCouchControlle
 		      		updateStatus('DISCONNECTED');
 		      	} else {
 		      		updateStatus('CONNECTED');
- 					refreshList();
  				}
+				refreshList();
 		  	}
 		};
 
@@ -42,7 +39,6 @@ pouchToCouch.controller('PouchToCouchController', function PouchToCouchControlle
 			db = new PouchDB('pouchdemo' + $scope.name, function(err) {
 				logError(err);
 				refreshList();
-				interval = setInterval(sync, 3000);
 			});
 		});
 	};
@@ -68,6 +64,7 @@ pouchToCouch.controller('PouchToCouchController', function PouchToCouchControlle
 				// }
 	   		//    		});
 			db.allDocs({include_docs: true, descending: true}, function(err, result) {
+				timeout = setTimeout(sync, 3000);
 				logError(err);
 				if (result) {
 					refreshView(result);
@@ -78,7 +75,6 @@ pouchToCouch.controller('PouchToCouchController', function PouchToCouchControlle
 	var refreshView = function(result) {
 
 		console.log('updating model from local db' + result.rows);
-		var restartInterval = false;
 		//remove messages which are probably already being deleted
 		result.rows = _.filter(result.rows, function(msg){
 			var existingMessage = _.find($scope.messages, function(m) {
@@ -152,8 +148,12 @@ pouchToCouch.controller('PouchToCouchController', function PouchToCouchControlle
 							}
 							return m;
 						});
-
-		db.remove(id, rev, logError);
+		db.remove(id, rev, function(err, result) {
+						logError(err);
+						if (result) {
+							console.log("removed a document from pouch");
+						}
+					});
 	};
 
 	var updateStatus = function(status) {
