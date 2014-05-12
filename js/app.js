@@ -3,6 +3,7 @@
 var pouchToCouch = angular.module('pouchToCouch', []);
 
 pouchToCouch.controller('PouchToCouchController', function PouchToCouchController($scope) {
+	$scope.messages = [];
 	var db = {};
 	var replicationStatus = 'UNKNOWN';
 	var couchUrl = 'http://localhost:5984/pouchdemo';
@@ -51,18 +52,6 @@ pouchToCouch.controller('PouchToCouchController', function PouchToCouchControlle
 		};
 
 	var refreshList = function() {
-			// 	var filterQuery = function(doc) {		
-			// 	if (doc.from === 'fred') 
-			// 		{
-			// 			emit(doc.time, doc);
-			// 		}
-			// };
-			 // db.query(filterQuery, {include_docs: true}, function(err, result) {
-				// logError(err);
-				// if (result) {
-				// 	refreshView(result);
-				// }
-	   		//    		});
 			db.allDocs({include_docs: true, descending: true}, function(err, result) {
 				timeout = setTimeout(sync, 3000);
 				logError(err);
@@ -73,7 +62,7 @@ pouchToCouch.controller('PouchToCouchController', function PouchToCouchControlle
 	};
 
 	var refreshView = function(result) {
-
+		if (!$scope.connected) return;
 		console.log('updating model from local db' + result.rows);
 		//remove messages which are probably already being deleted
 		result.rows = _.filter(result.rows, function(msg){
@@ -159,6 +148,7 @@ pouchToCouch.controller('PouchToCouchController', function PouchToCouchControlle
 	var updateStatus = function(status) {
 		if (status === 'REFRESH') {
 			$scope.connectionStyle = function() {return {color: 'black'};};
+			$scope.connected = false;
 		} else if (status === 'CONNECTED') {
 			$scope.connectionStyle = function() {return {color: 'red'};};
 			$scope.connected = true;
